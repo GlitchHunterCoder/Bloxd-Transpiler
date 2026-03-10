@@ -1,3 +1,9 @@
+function indent(n) {
+  var s = "";
+  for (var i = 0; i < n; i++) s += "    ";
+  return s;
+}
+
 var JS_TO_PYTHON = {
   tokens: {
     COMMENT_LINE:  { match: /\/\/[^\n]*/, skip: true },
@@ -281,4 +287,3 @@ var JS_TO_PYTHON = {
     }
   }
 };
-      
