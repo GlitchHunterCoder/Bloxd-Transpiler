@@ -1,19 +1,18 @@
-var Transpiler = (function () {
-      
+var  Transpiler = (function () {
   function buildTokeniser(tokenDefs) {
-        var defs = [];
+    var defs = [];
     for (var name in tokenDefs) {
       var def = tokenDefs[name];
       var entry = { name: name, skip: false };
       if (typeof def === "string") {
-                entry.type  = "literal";
+        entry.type  = "literal";
         entry.str   = def;
         entry.re    = null;
       } else if (def instanceof RegExp) {
         entry.type  = "regex";
         entry.re    = def;
       } else {
-                entry.skip  = def.skip || false;
+        entry.skip  = def.skip || false;
         if (typeof def.match === "string") {
           entry.type = "literal";
           entry.str  = def.match;
@@ -58,7 +57,6 @@ var Transpiler = (function () {
       return tokens;
     };
   }
-      
   function makeCtx(initial) {
     var stacks = Object.create(null);
     var log    = [];
@@ -92,14 +90,12 @@ var Transpiler = (function () {
       }
     };
   }
-        
-                  
   function compilePatternElement(el, rules) {
     if (typeof el === "string") {
       if (el.startsWith("$")) {
-                return { kind: "literal", str: el.slice(1), capture: false };
+        return { kind: "literal", str: el.slice(1), capture: false };
       }
-            if (el === el.toUpperCase() && /[A-Z]/.test(el)) {
+      if (el === el.toUpperCase() && /[A-Z]/.test(el)) {
         return { kind: "token", type: el, capture: true };
       }
       return { kind: "rule", rule: el, name: null, capture: true };
@@ -177,7 +173,6 @@ var Transpiler = (function () {
     }
     return pattern.map(function(el){ return compilePatternElement(el, rules); });
   }
-      
   function applyTemplate(template, captures, ctx) {
     if (typeof template === "function") {
       return template(captures, ctx);
@@ -185,7 +180,7 @@ var Transpiler = (function () {
     if (typeof template !== "string") {
       throw new Error("into must be a string template or function, got: " + typeof template);
     }
-        return template.replace(/\$([a-zA-Z_][a-zA-Z0-9_]*|\d+)/g, function (_, key) {
+    return template.replace(/\$([a-zA-Z_][a-zA-Z0-9_]*|\d+)/g, function (_, key) {
       var val;
       if (/^\d+$/.test(key)) {
         val = captures["$" + key];
@@ -197,16 +192,14 @@ var Transpiler = (function () {
       return String(val);
     });
   }
-      
   function makeState(tokens) {
     return { tokens: tokens, pos: 0 };
   }
   function stateAt(st, pos) { return { tokens: st.tokens, pos: pos }; }
   function currentTok(st)   { return st.tokens[st.pos] || { type: "$EOF", value: "" }; }
   function isEOF(st)        { return currentTok(st).type === "$EOF"; }
-      
   function buildPrattParser(operatorTable) {
-        var precMap = Object.create(null);
+    var precMap = Object.create(null);
     for (var level = 0; level < operatorTable.length; level++) {
       var entry = operatorTable[level];
       for (var j = 0; j < entry.ops.length; j++) {
@@ -250,11 +243,10 @@ var Transpiler = (function () {
       return left;
     };
   }
-      
   function runGrammar(grammar, src) {
-        var tokenise;
+    var tokenise;
     if (grammar._tokeniser) {
-            tokenise = grammar._tokeniser;
+      tokenise = grammar._tokeniser;
     } else if (grammar.tokens) {
       tokenise = buildTokeniser(grammar.tokens);
     } else {
@@ -265,16 +257,16 @@ var Transpiler = (function () {
     var ctx    = makeCtx(grammar.ctx || {});
     var rules  = grammar.rules || {};
     var memo   = Object.create(null);
-        var parsePratt = grammar.operators
+    var parsePratt = grammar.operators
       ? buildPrattParser(grammar.operators)
       : null;
-        function parseRule(name, state) {
-                        var mkey = name + "@" + state.pos;
+    function parseRule(name, state) {
+      var mkey = name + "@" + state.pos;
       if (mkey in memo) return memo[mkey];
       var def = rules[name];
       if (!def) throw new Error("Unknown rule: " + name);
       var result;
-                              if (name === "expr" && parsePratt) {
+      if (name === "expr" && parsePratt) {
         result = parsePratt(1, state, ctx, parseAtom, applyBinaryEmit);
       } else if (def.variants) {
         result = parseVariants(def.variants, state);
@@ -297,7 +289,9 @@ var Transpiler = (function () {
     }
     function parseVariant(variant, state) {
       var steps    = compilePattern(variant.pattern, rules);
-      var captures = Object.create(null);       var positional = [];                     var cur      = state;
+      var captures = Object.create(null); // named captures
+      var positional = [];               // $1 $2 ... (only capturing steps)
+      var cur      = state;
       var ctxMark  = ctx.mark();
       for (var i = 0; i < steps.length; i++) {
         var step = steps[i];
@@ -312,16 +306,16 @@ var Transpiler = (function () {
         }
         cur = r.state;
       }
-            for (var j = 0; j < positional.length; j++) {
+      for (var j = 0; j < positional.length; j++) {
         captures["$" + (j + 1)] = positional[j];
       }
-            var into = variant.into !== undefined ? variant.into
+      var into = variant.into !== undefined ? variant.into
                : (variant.pattern && typeof variant.into === "undefined" && variant.into)
                ? variant.into : variant.into;
-            if (into === undefined) into = variant.into;
+      if (into === undefined) into = variant.into;
       var value;
       if (into === undefined || into === null) {
-                value = positional.map(function(v){ return Array.isArray(v) ? v.join("") : String(v); }).join("");
+        value = positional.map(function(v){ return Array.isArray(v) ? v.join("") : String(v); }).join("");
       } else {
         value = applyTemplate(into, captures, ctx);
       }
@@ -336,14 +330,15 @@ var Transpiler = (function () {
         }
         case "literal": {
           var tok = currentTok(state);
-                    if (tok.value === step.str || tok.type === step.str) {
+          if (tok.value === step.str || tok.type === step.str) {
             return { ok: true, value: tok.value, state: stateAt(state, state.pos + 1) };
           }
           return { ok: false };
         }
         case "rule": {
-                    var mkey = step.rule + "@" + state.pos;
-          delete memo[mkey];           var r = parseRule(step.rule, state);
+          var mkey = step.rule + "@" + state.pos;
+          delete memo[mkey]; // allow re-parse after backtrack
+          var r = parseRule(step.rule, state);
           if (!r.ok) return { ok: false };
           return { ok: true, value: r.value, state: r.state };
         }
@@ -357,7 +352,8 @@ var Transpiler = (function () {
             var r = parseStep(step.inner, cur);
             if (!r.ok) break;
             results.push(r.value);
-            if (r.state.pos === cur.pos) break;             cur = r.state;
+            if (r.state.pos === cur.pos) break; // zero-width guard
+            cur = r.state;
           }
           if (results.length < step.min) {
             ctx.revert(ctxMark);
@@ -373,7 +369,7 @@ var Transpiler = (function () {
           return   { ok: true, value: "",    state: state };
         }
         case "sep": {
-                              var results = [];
+          var results = [];
           var cur     = state;
           var isToken = step.rule === step.rule.toUpperCase() && /[A-Z]/.test(step.rule);
           function matchElement(st) {
@@ -428,18 +424,18 @@ var Transpiler = (function () {
           throw new Error("Unknown step kind: " + step.kind);
       }
     }
-        function applyBinaryEmit(l, op, r) { return l + " " + op + " " + r; }
-            function parseAtom(state) {
+    function applyBinaryEmit(l, op, r) { return l + " " + op + " " + r; }
+    function parseAtom(state) {
       var name = rules["unaryExpr"] ? "unaryExpr"
                : rules["callExpr"]  ? "callExpr"
                : rules["primary"]   ? "primary"
                : null;
       if (!name) throw new Error("Grammar needs a 'unaryExpr', 'callExpr', or 'primary' rule for expressions");
-            var def = rules[name];
+      var def = rules[name];
       if (def.variants) return parseVariants(def.variants, state);
       return parseVariant(def, state);
     }
-        var startRule = grammar.start || "program";
+    var startRule = grammar.start || "program";
     var result    = parseRule(startRule, st);
     if (!result.ok) {
       var tok = currentTok(st);
@@ -454,7 +450,6 @@ var Transpiler = (function () {
     }
     return result.value;
   }
-      
   function createTranspiler(grammarOrPasses) {
     var passes = Array.isArray(grammarOrPasses) ? grammarOrPasses : [grammarOrPasses];
     return {
@@ -468,4 +463,4 @@ var Transpiler = (function () {
     };
   }
   return { createTranspiler: createTranspiler };
-})();
+})()
