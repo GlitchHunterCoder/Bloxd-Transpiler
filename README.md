@@ -30,7 +30,7 @@ console.log(
 
 <summary>Open Docs</summary>
 
-```js
+```
 // =============================================================================
 //  UNIVERSAL TRANSPILER ENGINE  v3.0
 //  Pure JS · No imports · No async · No Web APIs
