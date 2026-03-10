@@ -4,30 +4,53 @@ its goal is to take any one programming language, and convert it to any other, g
 ## Usage
 this example below uses `Python -> JS`
 ```js
-const grammar_export = grammar;
-const transpiler = createObjectTranspiler(grammar_export);
+(function testJSPy() {
+  var t   = Transpiler.createTranspiler(JS_TO_PYTHON);
+  var src = [
+    "var x = 10;",
+    "var y = 20;",
+    "if (x < y) {",
+    "  console.log(x);",
+    "} else {",
+    "  console.log(y);",
+    "}",
+    "function add(a, b) {",
+    "  return a + b;",
+    "}",
+    "var result = add(x, y);",
+    "console.log(result);"
+  ].join("\n");
+  try {
+    console.log("=== JS â†’ Python ===");
+    console.log(Transpiler.createTranspiler(JS_TO_PYTHON).parse(src));
+    console.log("PASSED\n");
+  } catch(e) { console.error("FAILED:", e.message, e.stack); }
+})();
 
-// ——— Quick tests ———
-console.log("=== single assignment ===");
-console.log(transpiler.Parse("a = 1 + 2 * 3"));
-
-console.log("\n=== function (inline) ===");
-console.log(transpiler.Parse("def add(x,y): x + y"));
-
-console.log("\n=== if inline ===");
-console.log(transpiler.Parse("if x > 0: y = 1 else: y = 2"));
-
-console.log("\n=== for inline ===");
-console.log(transpiler.Parse("for i in range(3): print(i)"));
-
-console.log("\n=== multi-line block ===");
-const multi = `
-def foo(x):
-    if x > 0:
-        y = x * 2
-        print(y)
-    else:
-        print(0)
-`;
-console.log(transpiler.Parse(multi.trim()));
+(function testPyJS() {
+  var src = [
+    "# Fibonacci",
+    "def fib(n):",
+    "    if n <= 1:",
+    "        return n",
+    "    return fib(n - 1) + fib(n - 2)",
+    "",
+    "x = 0",
+    "while x < 10:",
+    "    print(fib(x))",
+    "    x += 1",
+    "",
+    "for i in range(5):",
+    "    print(i)",
+    "",
+    "arr = [1, 2, 3]",
+    "arr.append(4)",
+    "print(len(arr))"
+  ].join("\n");
+  try {
+    console.log("=== Python â†’ JS ===");
+    console.log(Transpiler.createTranspiler(PYTHON_TO_JS).parse(src));
+    console.log("PASSED\n");
+  } catch(e) { console.error("FAILED:", e.message, e.stack); }
+})();
 ```
