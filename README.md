@@ -2,7 +2,7 @@
 ## Purpose
 its goal is to take any one programming language, and convert it to any other, given the correct grammer
 ## Usage
-this example below uses `Python -> JS`
+this example below uses `PYTHON_TO_JS` and `JS_TO_PYTHON`
 ```js
 (function testJSPy() {
   var t   = Transpiler.createTranspiler(JS_TO_PYTHON);
