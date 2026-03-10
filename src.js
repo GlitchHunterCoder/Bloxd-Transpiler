@@ -1,4 +1,4 @@
-var  Transpiler = (function () {
+var Transpiler = (function () {
   function buildTokeniser(tokenDefs) {
     var defs = [];
     for (var name in tokenDefs) {
@@ -464,3 +464,22 @@ var  Transpiler = (function () {
   }
   return { createTranspiler: createTranspiler };
 })()
+
+function indent(n) {
+  var s = "";
+  for (var i = 0; i < n; i++) s += "    ";
+  return s;
+}
+
+function splitTopArgs(s) {
+  var args = [], depth = 0, cur = "";
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    if (c === "(" || c === "[") { depth++; cur += c; }
+    else if (c === ")" || c === "]") { depth--; cur += c; }
+    else if (c === "," && depth === 0) { args.push(cur.trim()); cur = ""; }
+    else cur += c;
+  }
+  if (cur.trim()) args.push(cur.trim());
+  return args;
+}
