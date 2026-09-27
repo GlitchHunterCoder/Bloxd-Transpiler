@@ -1,6 +1,6 @@
 # Bloxd-Transpiler
-> [!WARNING]
-> This project is currently paused, since no progress could be made, it is highly inefficient, but i havent settled on a more efficient manner, so this repo will be inactive until i find such method
+> [!CAUTION]
+> This project is currently paused, since no progress could be made, it is highly inefficient, but i havent settled on a more efficient manner, so this repo will be inactive until i find such method, i highly recommend that you DONT use it, until this change has been made
 ## Purpose
 its goal is to take any one programming language, and convert it to any other, given the correct grammer
 ## Usage
